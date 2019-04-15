@@ -101,7 +101,7 @@ if __name__ == "__main__":
         MAX_DIST = float(read)
         print('Using choice:', MAX_DIST)
 
-    read = input('Set number of steps before stopping the MCS, default 2500: ')
+    read = input('Set number of steps before stopping, higher = better results,  default 2500: ')
     if read == '':
         print('Using default:', COOL_TIME)
     else:
