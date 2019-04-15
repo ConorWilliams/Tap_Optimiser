@@ -1,3 +1,4 @@
 *.csv
 !example.csv
 *.pdf
+__pycache__

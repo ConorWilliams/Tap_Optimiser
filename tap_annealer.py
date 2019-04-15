@@ -71,9 +71,12 @@ CLEAN_STEPS = 500
 COOL_TIME = 2500
 MAX_DIST = -1
 INTERMEDIATES = False
-FILE = 'points3'
 TAP_CAPACITY = 2000  # how much H2O each tap dishes out
-FILE = 'example.csv'
+FILE = 'example'
+
+array = 0
+taps = 0
+dists = 0
 
 if __name__ == "__main__":
     read = input('File name please (.csv auto added) with junk first line: ')
@@ -83,7 +86,7 @@ if __name__ == "__main__":
         FILE = str(read)
         print('Using choice:', FILE)
 
-    read = input("Tap output please, default 2500: ")
+    read = input("Tap output please, default 2000: ")
     if read == '':
         print('Using default:', TAP_CAPACITY)
     else:
@@ -98,7 +101,7 @@ if __name__ == "__main__":
         MAX_DIST = float(read)
         print('Using choice:', MAX_DIST)
 
-    read = input('Set number of steps before stopping the MCS, default 2000: ')
+    read = input('Set number of steps before stopping the MCS, default 2500: ')
     if read == '':
         print('Using default:', COOL_TIME)
     else:
@@ -152,7 +155,7 @@ def score(want_dist=0):
     '''
     the scoring function
     '''
-    global array, taps, dists, number_of_taps, number_of_houses
+    global array, taps, dists, number_of_taps, number_of_houses, MAX_DIST
 
     capacity = np.ones(number_of_taps) * TAP_CAPACITY
     tap = np.arange(number_of_taps)
@@ -283,7 +286,6 @@ def optimise(HH):
                     taps[i, ::] -= rand
                     continue
 
-                cache = array[::, i + 3]
                 update(i)
                 sp = score()[0]
 
@@ -293,7 +295,7 @@ def optimise(HH):
                     s = sp
                 else:
                     taps[i, ::] -= rand
-                    array[::, i + 3] = cache
+                    update(i)
 
                 if INTERMEDIATES:
                     print(str(i).zfill(4), COOL_TIME - j, s / s0 * 100)
@@ -304,13 +306,13 @@ def optimise(HH):
         #/*-------------------------------------------------------------------*/
 
         # clean up randomness with 500 pure steps
+        s = score()[0]
         for j in range(CLEAN_STEPS):
             for i in range(number_of_taps):
                 rand = (random.uniform(-1, 1), random.uniform(-1, 1))
                 rand = np.multiply(rand, STEP * length * 0.01)
                 taps[i, ::] += rand
 
-                cache = array[::, i + 3]
                 update(i)
                 sp = score()[0]
 
@@ -318,7 +320,7 @@ def optimise(HH):
                     s = sp
                 else:
                     taps[i, ::] -= rand
-                    array[::, i + 3] = cache
+                    update(i)
 
             print('Adjusting', j, '/', CLEAN_STEPS)
 
