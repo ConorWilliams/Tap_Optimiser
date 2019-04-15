@@ -1,1 +1,3 @@
 *.csv
+!example.csv
+*.pdf

@@ -1,4 +1,6 @@
 '''
+tap_annealer.py
+
 Copyright (c) 2019 C. J. Williams
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,13 +35,19 @@ tap-house distance below the required value the process is re-run with more taps
 Each run saves a figure containing the optimum solution for a given number of 
 taps as well as writing the positions to a .csv file.
 
-Place the house data .csv file in same directory as source code.
+Place the house data .csv file in same directory as source code. The first line 
+of the file is ignored but must still have three coma-separated words
 
 Program will let you know the maximum walking distance at end, so run with -1 
 first to get an idea of what to set that to.
 
 Press Enter to use default.
     ''')
+
+'''
+This program can be used either as a standalone or imported and run using the
+optimise() and set_defaults() functions. See demo.py for example.
+'''
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -65,12 +73,15 @@ MAX_DIST = -1
 INTERMEDIATES = False
 FILE = 'points3'
 TAP_CAPACITY = 2000  # how much H2O each tap dishes out
+FILE = 'example.csv'
 
-
-# file containing coordinates and water requirements, .csv starts reading from second line
 if __name__ == "__main__":
-    FILE = str(
-        input('File name please (.csv auto added) with junk first line: '))
+    read = input('File name please (.csv auto added) with junk first line: ')
+    if read == '':
+        print('Using default:', FILE)
+    else:
+        FILE = str(read)
+        print('Using choice:', FILE)
 
     read = input("Tap output please, default 2500: ")
     if read == '':
@@ -107,18 +118,19 @@ if __name__ == "__main__":
 
 
 def set_defaults(cool_time=2500, max_dist=-1, verbose=False, tap_capacity=2000,
-                 undervolt=0.1):
+                 undervolt=0.1, clean_steps=500):
     '''
     Use this to set the defaults that would normally be set by typing into 
     the terminal. Can also set under-volt, controls max tap overuse
     '''
-    global COOL_TIME, MAX_DIST, INTERMEDIATES, TAP_CAPACITY, UNDERVOLT
+    global COOL_TIME, MAX_DIST, INTERMEDIATES, TAP_CAPACITY, UNDERVOLT, CLEAN_STEPS
 
     COOL_TIME = cool_time
     MAX_DIST = max_dist
     INTERMEDIATES = verbose
     TAP_CAPACITY = tap_capacity
     UNDERVOLT = undervolt
+    CLEAN_STEPS = clean_steps
 
     return 0
 
@@ -199,11 +211,18 @@ def get_cmap(n, name='hsv'):
 
 def optimise(HH):
     '''
-    Optimise the taps for the houses contained in HH, each row is a house with 
-    first and second column coordinates and the third column the weighting.
+    Optimise the taps for the HouseHolds contained in HH, each row is a house 
+    with first and second column coordinates and the third column the weighting.
+
+    Returns an numpy array of taps, each each row a tap with first and second 
+    column coordinates and the third column the percentage utilisation.
+
+    If maximum distance is unfulfillable then more taps will be added until a 
+    solution is found.
     '''
     global array, taps, dists, number_of_taps, number_of_houses
-    #============find the grid
+
+    # find the grid and centre
     maxLat = (np.amax(HH[:, 0]))
     minLat = (np.amin(HH[:, 0]))
     maxLong = (np.amax(HH[:, 1]))
@@ -340,6 +359,8 @@ def optimise(HH):
 
         plt.legend()
         plt.savefig(FILE + '_' + str(number_of_taps) + '_taps' + '.pdf')
+
+        #/*-------------------------------------------------------------------*/
 
         with open(FILE + '_' + str(number_of_taps) + '_taps' + '.csv', 'w') as file:
             file.write("x, y, percent utilisation\n")
