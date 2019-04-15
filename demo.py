@@ -21,7 +21,7 @@ HouseHolds = np.array(raw)
 Use this function to set the defaults normally entered at the command line
 '''
 tap.set_defaults(cool_time=1000, tap_capacity=1000,
-                 max_dist=0.0035, clean_steps=500)
+                 max_dist=0.0040, clean_steps=500)
 
 '''
 Optimise the taps for the houses contained in HH, each row is a house with 

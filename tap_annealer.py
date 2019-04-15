@@ -53,7 +53,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pandas as pd
 import math
-import random
 
 DICT = {'yes': True, 'ye': True, 'y': True, 'n': False, 'no': False, 1: 'yes',
         0: 'no', 't': True, 'true': True, 'f': False, 'false': False}
@@ -74,6 +73,7 @@ INTERMEDIATES = False
 TAP_CAPACITY = 2000  # how much H2O each tap dishes out
 FILE = 'example'
 
+# initialise global variables
 array = 0
 taps = 0
 dists = 0
@@ -126,7 +126,8 @@ def set_defaults(cool_time=2500, max_dist=-1, verbose=False, tap_capacity=2000,
     Use this to set the defaults that would normally be set by typing into 
     the terminal. Can also set under-volt, controls max tap overuse
     '''
-    global COOL_TIME, MAX_DIST, INTERMEDIATES, TAP_CAPACITY, UNDERVOLT, CLEAN_STEPS
+    global COOL_TIME, MAX_DIST, INTERMEDIATES, TAP_CAPACITY, UNDERVOLT
+    global CLEAN_STEPS
 
     COOL_TIME = cool_time
     MAX_DIST = max_dist
@@ -277,9 +278,8 @@ def optimise(HH):
         T = T0
         for j in range(COOL_TIME):
             for i in range(number_of_taps):
-                rand = (random.uniform(-1, 1), random.uniform(-1, 1))
-                rand = np.multiply(rand, STEP * length * 0.25 *
-                                   random.uniform(0, T / T0))
+                rand = 2 * np.random.rand(2) - 1
+                rand *= length * 0.25 * T / T0 * np.random.random()
                 taps[i, ::] += rand
 
                 if np.abs(taps[i, ::] - centre)[0] > length / 2 or np.abs(taps[i, ::] - centre)[1] > length / 2:
@@ -291,7 +291,7 @@ def optimise(HH):
 
                 if sp <= s:
                     s = sp
-                elif random.uniform(0, 1) <= np.exp(-(sp - s) / (T * kB)):
+                elif np.random.random() <= np.exp(-(sp - s) / (T * kB)):
                     s = sp
                 else:
                     taps[i, ::] -= rand
@@ -309,8 +309,8 @@ def optimise(HH):
         s = score()[0]
         for j in range(CLEAN_STEPS):
             for i in range(number_of_taps):
-                rand = (random.uniform(-1, 1), random.uniform(-1, 1))
-                rand = np.multiply(rand, STEP * length * 0.01)
+                rand = 2 * np.random.rand(2) - 1
+                rand *= length * np.random.random() * STEP
                 taps[i, ::] += rand
 
                 update(i)
