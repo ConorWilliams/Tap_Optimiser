@@ -63,7 +63,7 @@ def strtobool(str):
 
 
 UNDERVOLT = 0.1  # you can twiddle this to change some subtle behaviour :)
-STEP = 1
+STEP = 1  # can reduce for finer stepping at adjustment stage
 T0 = 0.1
 CLEAN_STEPS = 500
 
@@ -77,6 +77,8 @@ FILE = 'example'
 array = 0
 taps = 0
 dists = 0
+number_of_taps = 0
+number_of_houses = 0
 
 if __name__ == "__main__":
     read = input('File name please (.csv auto added) with junk first line: ')
@@ -101,7 +103,8 @@ if __name__ == "__main__":
         MAX_DIST = float(read)
         print('Using choice:', MAX_DIST)
 
-    read = input('Set number of steps before stopping, higher = better results,  default 2500: ')
+    read = input(
+        'Set number of steps before stopping, higher = better results,  default 2500: ')
     if read == '':
         print('Using default:', COOL_TIME)
     else:
@@ -121,13 +124,13 @@ if __name__ == "__main__":
 
 
 def set_defaults(cool_time=2500, max_dist=-1, verbose=False, tap_capacity=2000,
-                 undervolt=0.1, clean_steps=500):
+                 undervolt=0.1, clean_steps=500, step=1):
     '''
     Use this to set the defaults that would normally be set by typing into 
     the terminal. Can also set under-volt, controls max tap overuse
     '''
     global COOL_TIME, MAX_DIST, INTERMEDIATES, TAP_CAPACITY, UNDERVOLT
-    global CLEAN_STEPS
+    global CLEAN_STEPS, STEP
 
     COOL_TIME = cool_time
     MAX_DIST = max_dist
@@ -135,6 +138,7 @@ def set_defaults(cool_time=2500, max_dist=-1, verbose=False, tap_capacity=2000,
     TAP_CAPACITY = tap_capacity
     UNDERVOLT = undervolt
     CLEAN_STEPS = clean_steps
+    STEP = step
 
     return 0
 
@@ -143,13 +147,13 @@ def update(i):
     '''
     update the distances for the i'th tap
     '''
-    global array, taps
+    global array, taps, number_of_houses
 
     # add the dist to each tap to each house to the array
-    for row in array:
-        d = np.subtract(row[0:2], taps[i, ::])
-        d = np.multiply(d, d)
-        row[3 + i] = np.sum(d)
+    d = np.empty((number_of_houses, 2))
+    d = array[::, 0:2] - taps[i, ::]
+    d = d * d
+    array[::, 3 + i] = np.sum(d, axis=1)
 
 
 def score(want_dist=0):
@@ -254,8 +258,8 @@ def optimise(HH):
         print('Trying with', number_of_taps, 'taps')
 
         # big array to hold all the data
-        array = np.ones((len(HH), 3 + number_of_taps + 2))
-        array[:, 0:3] = HH  # set the first part of the array to include the houses
+        array = np.ones((number_of_houses, 3 + number_of_taps + 2))
+        array[:, 0:3] = HH
 
         taps = np.ones((number_of_taps, 2))
         taps[::, 0] = centre[0]
