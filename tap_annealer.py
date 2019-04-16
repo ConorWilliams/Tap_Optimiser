@@ -150,7 +150,6 @@ def update(i):
     global array, taps, number_of_houses
 
     # add the dist to each tap to each house to the array
-    d = np.empty((number_of_houses, 2))
     d = array[::, 0:2] - taps[i, ::]
     d = d * d
     array[::, 3 + i] = np.sum(d, axis=1)
@@ -166,10 +165,9 @@ def score(want_dist=0):
     tap = np.arange(number_of_taps)
 
     # put the last col as the smallest distance
-    for row in array:
-        row[-1] = np.min(row[3:-2])
+    array[::, -1] = np.amin(array[::, 3:-2], axis=1)
 
-    # sort the array by the las col ^
+    # sort the array in place by the last col ^
     array = array[np.argsort(array[::, -1]), ::]
 
     # calculate the score
