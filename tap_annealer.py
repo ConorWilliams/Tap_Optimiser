@@ -49,10 +49,12 @@ This program can be used either as a standalone or imported and run using the
 optimise() and set_defaults() functions. See demo.py for example.
 '''
 
-import numpy as np
 from matplotlib import pyplot as plt
+
+import numpy as np
 import pandas as pd
 import math
+
 
 DICT = {'yes': True, 'ye': True, 'y': True, 'n': False, 'no': False, 1: 'yes',
         0: 'no', 't': True, 'true': True, 'f': False, 'false': False}
@@ -147,11 +149,11 @@ def update(i):
     '''
     update the distances for the i'th tap
     '''
-    global array, taps, number_of_houses
+    global array, taps
 
     # add the dist to each tap to each house to the array
     d = array[::, 0:2] - taps[i, ::]
-    d = d * d
+    d *= d
     array[::, 3 + i] = np.sum(d, axis=1)
 
 
@@ -311,7 +313,7 @@ def optimise(HH):
         s = score()[0]
         for j in range(CLEAN_STEPS):
             for i in range(number_of_taps):
-                rand = 2 * np.random.rand(2) - 1
+                rand = 0.04 * np.random.rand(2) - 0.02
                 rand *= length * np.random.random() * STEP
                 taps[i, ::] += rand
 
@@ -324,7 +326,7 @@ def optimise(HH):
                     taps[i, ::] -= rand
                     update(i)
 
-            print('Adjusting', j, '/', CLEAN_STEPS)
+            print('Adjusting', j, '/', CLEAN_STEPS, s / s0 * 100)
 
         #/*-------------------------------------------------------------------*/
 
@@ -336,8 +338,8 @@ def optimise(HH):
         capacity = np.round(capacity)
 
         print('Tap usage percent:', capacity)
-        for c, tap in enumerate(taps):
-            print(tap, str(capacity[c]).zfill(5))
+        for tap, cap in zip(taps, capacity):
+            print(tap, str(cap).zfill(5))
 
         worst = dists.max()
 
@@ -368,9 +370,9 @@ def optimise(HH):
 
         with open(FILE + '_' + str(number_of_taps) + '_taps' + '.csv', 'w') as file:
             file.write("x, y, percent utilisation\n")
-            for c, tap in enumerate(taps):
-                file.write(str(tap[0]) + "," + str(tap[1]) +
-                           "," + str(capacity[c]) + "\n")
+            for tap, cap in zip(taps, capacity):
+                file.write(str(tap[0]) + "," +
+                           str(tap[1]) + "," + str(cap) + "\n")
 
         if worst < MAX_DIST:
             break
