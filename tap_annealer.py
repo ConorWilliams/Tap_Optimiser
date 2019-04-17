@@ -187,7 +187,7 @@ def score(want_dist=0):
 
         # assign the closest tap with available water to the house
         for index in order:
-            if capacity[index] - row[0] * _k > -UNDERVOLT * TAP_CAPACITY * _k:
+            if capacity[index] - row[0] > -UNDERVOLT * TAP_CAPACITY or _k == 2:
                 capacity[index] -= row[0]
                 row[-1] = tap[index]
 
